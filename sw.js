@@ -1,4 +1,16 @@
-self.addEventListener('fetch', function(event) {
-  // Este código permite que la app funcione incluso con internet lento
-  event.respondWith(fetch(event.request));
+const CACHE_NAME = 'masterlife-v1';
+const assets = ['./', './index.html', './manifest.json'];
+
+self.addEventListener('install', e => {
+    e.waitUntil(
+        caches.open(CACHE_NAME).then(cache => {
+            return cache.addAll(assets);
+        })
+    );
+});
+
+self.addEventListener('fetch', e => {
+    e.respondWith(
+        fetch(e.request).catch(() => caches.match(e.request))
+    );
 });
