@@ -5,18 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Master Life PWA</title>
     <link rel="manifest" href="manifest.json">
-
     <style>
         :root {
             --bg: #0d0d12;
             --surface: #1a1a22;
             --text-main: #f8fafc;
             --text-dim: #94a3b8;
-            /* Frecuencias Cerebrales */
             --delta: #4a5568; --theta: #8b5cf6; --alpha: #10b981; --beta: #f59e0b; --gamma: #ef4444;
         }
 
-        /* Colores de los Días */
         .color-domingo { --day-color: #ef4444; }
         .color-lunes { --day-color: #ff9800; }
         .color-martes { --day-color: #ffeb3b; --text-color: #1a1a22; }
@@ -30,7 +27,6 @@
             color: var(--text-main);
             font-family: 'Segoe UI', system-ui, sans-serif;
             margin: 0;
-            overflow-x: hidden;
             padding-bottom: 30px;
         }
 
@@ -49,110 +45,88 @@
         .day-card {
             background-color: var(--day-color);
             border-radius: 20px; padding: 25px 15px;
-            text-align: center; text-decoration: none;
+            text-align: center; border: none;
             color: var(--text-color, #fff); font-weight: 800;
             box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-            transition: transform 0.2s; display: flex; flex-direction: column;
-            cursor: pointer;
+            transition: transform 0.2s; cursor: pointer;
         }
 
-        .day-card:active { transform: scale(0.95); }
-
-        /* Contenedor de Tarea y Subtareas */
         .task-group {
             background: var(--surface); border-radius: 16px;
             margin-bottom: 12px; border-left: 5px solid var(--freq-color);
             overflow: hidden;
         }
 
-        .task-item {
-            padding: 12px 14px;
-            display: flex; align-items: center; gap: 12px;
-        }
-
+        .task-item { padding: 12px 14px; display: flex; align-items: center; gap: 8px; }
         .task-item.completed { opacity: 0.4; }
         .task-item.completed h4 { text-decoration: line-through; }
 
-        .freq-tag { font-size: 9px; font-weight: 900; color: var(--freq-color); width: 40px; text-align: center; }
-        .task-info { flex: 1; }
-        .task-info h4 { margin: 0; font-size: 14px; cursor: pointer; }
+        .order-actions { display: flex; flex-direction: column; gap: 2px; flex-shrink: 0; }
+        .btn-order { background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 12px; padding: 2px; }
 
-        /* Estilos Subtareas */
-        .subtasks-container {
-            background: rgba(0,0,0,0.15);
-            padding: 5px 10px 10px 52px;
-            display: flex; flex-direction: column; gap: 6px;
-        }
+        .freq-tag { font-size: 9px; font-weight: 900; color: var(--freq-color); width: 35px; text-align: center; flex-shrink: 0; }
+        
+        /* AJUSTE PARA EL TÍTULO: Ahora permite más texto */
+        .task-info { flex: 1; min-width: 0; padding-right: 5px; } 
+        .task-info h4 { margin: 0; font-size: 14px; cursor: pointer; word-wrap: break-word; line-height: 1.2; }
 
-        .subtask-item {
-            display: flex; align-items: center; gap: 10px;
-            font-size: 12px; color: var(--text-dim);
-            cursor: pointer;
-        }
-
-        .subtask-item.done { text-decoration: line-through; opacity: 0.5; }
-
-        .sub-check {
-            width: 14px; height: 14px; border: 1px solid var(--freq-color);
-            border-radius: 3px; display: flex; align-items: center; justify-content: center;
-        }
-
-        .subtask-item.done .sub-check { background: var(--freq-color); }
-
-        /* Botones y Controles */
         .task-link {
             display: inline-block; background: rgba(59, 130, 246, 0.15);
             color: #60a5fa; text-decoration: none; font-size: 10px;
             padding: 2px 8px; border-radius: 6px; margin-top: 4px;
         }
 
-        .actions { display: flex; gap: 8px; }
-        .btn-icon { background: none; border: none; cursor: pointer; font-size: 14px; opacity: 0.5; color: white; }
+        /* CONTENEDOR DE ACCIONES: Fijo para no apretar el texto */
+        .actions { 
+            display: flex; 
+            align-items: center; 
+            gap: 5px; 
+            flex-shrink: 0; /* Impide que este bloque se haga pequeño */
+        }
+
+        .subtasks-container {
+            background: rgba(0,0,0,0.15); padding: 5px 10px 10px 52px;
+            display: flex; flex-direction: column; gap: 6px;
+        }
+
+        .subtask-item { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--text-dim); cursor: pointer; }
+        .subtask-item.done { text-decoration: line-through; opacity: 0.5; }
+
+        .sub-check { width: 14px; height: 14px; border: 1px solid var(--freq-color); border-radius: 3px; }
+        .subtask-item.done .sub-check { background: var(--freq-color); }
+
+        .btn-icon { background: none; border: none; cursor: pointer; font-size: 15px; color: white; opacity: 0.6; padding: 4px; }
 
         .check-circle {
             width: 22px; height: 22px; border: 2px solid var(--freq-color);
             border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
         }
         .completed .check-circle { background: var(--freq-color); }
-        .completed .check-circle::after { content: '✓'; color: white; font-size: 12px; }
+        .completed .check-circle::after { content: '✓'; color: white; font-size: 13px; }
 
-        .btn-back {
-            background: rgba(255,255,255,0.05); border: none; color: var(--text-dim);
-            padding: 8px 16px; border-radius: 20px; cursor: pointer; margin-bottom: 20px;
-        }
+        .btn-back { background: rgba(255,255,255,0.05); border: none; color: var(--text-dim); padding: 8px 16px; border-radius: 20px; cursor: pointer; }
     </style>
-    
-    <link rel="manifest" href="manifest.json">
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log('SW registrado', reg))
-                    .catch(err => console.log('Error SW', err));
-            });
-        }
-    </script>
-
 </head>
 <body>
 
 <div id="home-view" class="view active">
     <header><h2>Life Tracker</h2></header>
     <nav class="days-container">
-        <div class="day-card color-domingo" onclick="showDay('Domingo')"><span class="day-name">Domingo</span></div>
-        <div class="day-card color-lunes" onclick="showDay('Lunes')"><span class="day-name">Lunes</span></div>
-        <div class="day-card color-martes" onclick="showDay('Martes')"><span class="day-name">Martes</span></div>
-        <div class="day-card color-miercoles" onclick="showDay('Miércoles')"><span class="day-name">Miércoles</span></div>
-        <div class="day-card color-jueves" onclick="showDay('Jueves')"><span class="day-name">Jueves</span></div>
-        <div class="day-card color-viernes" onclick="showDay('Viernes')"><span class="day-name">Viernes</span></div>
-        <div class="day-card color-sabado" onclick="showDay('Sábado')"><span class="day-name">Sábado</span></div>
+        <button class="day-card color-domingo" onclick="showDay('Domingo')">Domingo</button>
+        <button class="day-card color-lunes" onclick="showDay('Lunes')">Lunes</button>
+        <button class="day-card color-martes" onclick="showDay('Martes')">Martes</button>
+        <button class="day-card color-miercoles" onclick="showDay('Miércoles')">Miércoles</button>
+        <button class="day-card color-jueves" onclick="showDay('Jueves')">Jueves</button>
+        <button class="day-card color-viernes" onclick="showDay('Viernes')">Viernes</button>
+        <button class="day-card color-sabado" onclick="showDay('Sábado')">Sábado</button>
     </nav>
 </div>
 
 <div id="day-view" class="view">
-    <div style="display: flex; justify-content: space-between; align-items: center;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
         <button class="btn-back" onclick="showHome()">← Menú</button>
-        <button onclick="addTask()" style="background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 10px; font-weight: bold;">+ Tarea</button>
+        <button onclick="addTask()" style="background: #ef4444; color: white; border: none; padding: 8px 15px; border-radius: 10px; font-weight: bold;">+ Tarea</button>
     </div>
     <h2 id="current-day-title" style="margin-bottom: 20px; padding-left: 15px;"></h2>
     <div id="tasks-container"></div>
@@ -160,17 +134,10 @@
 
 <script>
     let currentDay = '';
-    
-    // CARGAR DATOS: Prioridad al LocalStorage, si no existe, usar el objeto inicial.
     let allDaysData = JSON.parse(localStorage.getItem('masterLifeDB')) || {
-        'Domingo': [
-            { f: 'Alpha', t: 'Inglés', u: 'https://duolingo.com', c: 'var(--alpha)', done: false, subs: [] },
-            { f: 'Alpha', t: 'Programación', u: 'https://github.com', c: 'var(--alpha)', done: false, subs: [] }
-        ],
-        'Lunes': []
+        'Domingo': [], 'Lunes': [], 'Martes': [], 'Miércoles': [], 'Jueves': [], 'Viernes': [], 'Sábado': []
     };
 
-    // Función para guardar automáticamente en cada cambio
     function saveToStorage() {
         localStorage.setItem('masterLifeDB', JSON.stringify(allDaysData));
     }
@@ -179,9 +146,7 @@
         currentDay = day;
         document.getElementById('home-view').classList.remove('active');
         document.getElementById('day-view').classList.add('active');
-        const titleEl = document.getElementById('current-day-title');
-        titleEl.innerText = day;
-        titleEl.style.borderLeft = `5px solid var(--day-color)`;
+        document.getElementById('current-day-title').innerText = day;
         renderTasks();
     }
 
@@ -195,8 +160,7 @@
             group.className = 'task-group';
             group.style.setProperty('--freq-color', task.c);
 
-            // Generar HTML de subtareas si existen
-            const subtasksHTML = (task.subs || []).map((sub, sIdx) => `
+            const subsHTML = (task.subs || []).map((sub, sIdx) => `
                 <div class="subtask-item ${sub.done ? 'done' : ''}" onclick="toggleSub(${tIdx}, ${sIdx})">
                     <div class="sub-check"></div>
                     <span>${sub.t}</span>
@@ -205,6 +169,10 @@
 
             group.innerHTML = `
                 <div class="task-item ${task.done ? 'completed' : ''}">
+                    <div class="order-actions">
+                        <button class="btn-order" onclick="moveTask(${tIdx}, -1)">▲</button>
+                        <button class="btn-order" onclick="moveTask(${tIdx}, 1)">▼</button>
+                    </div>
                     <div class="freq-tag">${task.f}</div>
                     <div class="task-info">
                         <h4 onclick="toggleMain(${tIdx})">${task.t}</h4>
@@ -217,16 +185,51 @@
                     </div>
                     <div class="check-circle" onclick="toggleMain(${tIdx})"></div>
                 </div>
-                ${task.subs && task.subs.length > 0 ? `<div class="subtasks-container">${subtasksHTML}</div>` : ''}
+                ${task.subs && task.subs.length > 0 ? `<div class="subtasks-container">${subsHTML}</div>` : ''}
             `;
             container.appendChild(group);
         });
-        saveToStorage(); // Guardar cada vez que renderizamos
+        saveToStorage();
     }
 
-    // LÓGICA DE INTERACCIÓN
-    function toggleMain(index) {
-        allDaysData[currentDay][index].done = !allDaysData[currentDay][index].done;
+    function moveTask(index, direction) {
+        const tasks = allDaysData[currentDay];
+        const newIdx = index + direction;
+        if (newIdx >= 0 && newIdx < tasks.length) {
+            [tasks[index], tasks[newIdx]] = [tasks[newIdx], tasks[index]];
+            renderTasks();
+        }
+    }
+
+    function addTask() {
+        let t = prompt("Tarea:");
+        let u = prompt("URL (opcional):", "");
+        let f = prompt("Frecuencia (Delta, Theta, Alpha, Beta, Gamma):", "Alpha");
+        if (t) {
+            let color = `var(--${f.toLowerCase()})`;
+            allDaysData[currentDay].push({ f: f || 'Alpha', t: t, u: u, c: color, done: false, subs: [] });
+            renderTasks();
+        }
+    }
+
+    function editTask(tIdx) {
+        let task = allDaysData[currentDay][tIdx];
+        let nT = prompt("Editar nombre:", task.t);
+        let nU = prompt("Editar URL:", task.u || "");
+        let nF = prompt("Editar frecuencia:", task.f);
+        if (nT !== null) {
+            task.t = nT;
+            task.u = nU;
+            if (nF) {
+                task.f = nF;
+                task.c = `var(--${nF.toLowerCase()})`;
+            }
+            renderTasks();
+        }
+    }
+
+    function toggleMain(tIdx) {
+        allDaysData[currentDay][tIdx].done = !allDaysData[currentDay][tIdx].done;
         renderTasks();
     }
 
@@ -235,40 +238,18 @@
         renderTasks();
     }
 
-    function addSub(index) {
-        let text = prompt("Nueva subtarea:");
-        if (text) {
-            if (!allDaysData[currentDay][index].subs) allDaysData[currentDay][index].subs = [];
-            allDaysData[currentDay][index].subs.push({ t: text, done: false });
+    function addSub(tIdx) {
+        let txt = prompt("Nueva subtarea:");
+        if (txt) {
+            if (!allDaysData[currentDay][tIdx].subs) allDaysData[currentDay][tIdx].subs = [];
+            allDaysData[currentDay][tIdx].subs.push({ t: txt, done: false });
             renderTasks();
         }
     }
 
-    function addTask() {
-        let t = prompt("Tarea principal:");
-        let f = prompt("Frecuencia (Delta, Theta, Alpha, Beta, Gamma):", "Alpha");
-        if(t) {
-            if(!allDaysData[currentDay]) allDaysData[currentDay] = [];
-            let colorVar = `var(--${f.toLowerCase()})`;
-            allDaysData[currentDay].push({ f: f, t: t, u: '', c: colorVar, done: false, subs: [] });
-            renderTasks();
-        }
-    }
-
-    function editTask(index) {
-        let task = allDaysData[currentDay][index];
-        let nT = prompt("Editar nombre:", task.t);
-        let nU = prompt("Editar URL:", task.u || "");
-        if (nT) {
-            task.t = nT;
-            task.u = nU;
-            renderTasks();
-        }
-    }
-
-    function deleteTask(index) {
-        if(confirm('¿Eliminar tarea y sus subtareas?')) {
-            allDaysData[currentDay].splice(index, 1);
+    function deleteTask(tIdx) {
+        if(confirm("¿Eliminar?")) {
+            allDaysData[currentDay].splice(tIdx, 1);
             renderTasks();
         }
     }
@@ -276,6 +257,12 @@
     function showHome() {
         document.getElementById('day-view').classList.remove('active');
         document.getElementById('home-view').classList.add('active');
+    }
+
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW error', err));
+        });
     }
 </script>
 </body>
