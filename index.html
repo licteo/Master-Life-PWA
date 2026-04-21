@@ -66,7 +66,6 @@
 
         .freq-tag { font-size: 9px; font-weight: 900; color: var(--freq-color); width: 35px; text-align: center; flex-shrink: 0; }
         
-        /* AJUSTE PARA EL TÍTULO: Ahora permite más texto */
         .task-info { flex: 1; min-width: 0; padding-right: 5px; } 
         .task-info h4 { margin: 0; font-size: 14px; cursor: pointer; word-wrap: break-word; line-height: 1.2; }
 
@@ -76,13 +75,7 @@
             padding: 2px 8px; border-radius: 6px; margin-top: 4px;
         }
 
-        /* CONTENEDOR DE ACCIONES: Fijo para no apretar el texto */
-        .actions { 
-            display: flex; 
-            align-items: center; 
-            gap: 5px; 
-            flex-shrink: 0; /* Impide que este bloque se haga pequeño */
-        }
+        .actions { display: flex; align-items: center; gap: 5px; flex-shrink: 0; }
 
         .subtasks-container {
             background: rgba(0,0,0,0.15); padding: 5px 10px 10px 52px;
@@ -134,9 +127,18 @@
 
 <script>
     let currentDay = '';
-    let allDaysData = JSON.parse(localStorage.getItem('masterLifeDB')) || {
+    
+    // MEJORA: Inicialización robusta para asegurar que todos los días existan
+    const defaultData = {
         'Domingo': [], 'Lunes': [], 'Martes': [], 'Miércoles': [], 'Jueves': [], 'Viernes': [], 'Sábado': []
     };
+    
+    let allDaysData = JSON.parse(localStorage.getItem('masterLifeDB')) || defaultData;
+
+    // Asegurarse de que si faltan días en un storage viejo, se añadan ahora
+    Object.keys(defaultData).forEach(day => {
+        if (!allDaysData[day]) allDaysData[day] = [];
+    });
 
     function saveToStorage() {
         localStorage.setItem('masterLifeDB', JSON.stringify(allDaysData));
@@ -207,6 +209,7 @@
         let f = prompt("Frecuencia (Delta, Theta, Alpha, Beta, Gamma):", "Alpha");
         if (t) {
             let color = `var(--${f.toLowerCase()})`;
+            if (!allDaysData[currentDay]) allDaysData[currentDay] = [];
             allDaysData[currentDay].push({ f: f || 'Alpha', t: t, u: u, c: color, done: false, subs: [] });
             renderTasks();
         }
